@@ -1,0 +1,40 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+    container_name: "nft_service"
+    ports:
+      - "8008:8008"
+    networks:
+      nft_network:
+    restart: unless-stopped
+
+  database:
+    image: postgres:15.7-alpine
+    container_name: "nft_database"
+    ports:
+      - "9876:5432"
+    environment:
+      - POSTGRES_USER=${PG_SUPERUSER_USER:-postgres}
+      - POSTGRES_PASSWORD=${PG_SUPERUSER_PASSWORD:-pass}
+      - POSTGRES_DB=${PG_SUPERUSER_DB:-postgres}
+    networks:
+      nft_network:
+    volumes:
+      - nft_service:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U ${PG_SUPERUSER_USER:-postgres}
+      interval: 30s
+      timeout: 3s
+      retries: 2
+    restart: unless-stopped
+
+networks:
+  nft_network:
+    external: true
+
+volumes:
+  nft_service:
