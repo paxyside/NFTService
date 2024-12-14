@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	_ "net/http/pprof"
 	"nft_service/infrastructure/config"
 	"nft_service/infrastructure/database"
 	"os"
@@ -15,15 +16,17 @@ import (
 )
 
 func StartApp() {
-	l := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	l := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 	l = l.With("app_info", slog.GroupValue(
 		slog.String("os", runtime.GOOS),
 		slog.String("go_version", runtime.Version()),
 		slog.Int("num_cpu", runtime.NumCPU()),
 		slog.Int("num_goroutine", runtime.NumGoroutine()),
 	))
-
 	slog.SetDefault(l)
 
 	cfg, err := config.LoadConfig()
@@ -37,17 +40,15 @@ func StartApp() {
 		l.Error("failed to connect to database", slog.Any("error", err))
 		os.Exit(1)
 	}
-	l.Info("connected to database")
 	defer db.Close()
 
-	server, err := setupServer(db, cfg)
+	server, err := setupServer(ctx, db, cfg)
 	if err != nil {
 		l.Error("failed to setup server", slog.Any("error", err))
 		os.Exit(1)
 	}
 
 	serverAddr := fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
-
 	srv := &http.Server{
 		Addr:         serverAddr,
 		ReadTimeout:  5 * time.Second,
@@ -63,31 +64,26 @@ func StartApp() {
 		}
 	}()
 
-	quit := make(chan os.Signal)
+	go func() {
+		if err := http.ListenAndServe(":6060", nil); err != nil {
+			l.Error("listen", "address", ":6060", "error", err)
+		}
+	}()
 
+	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	select {
-	case d := <-quit:
-		l.Info("servers stopped", "reason", d.String())
-	}
+	<-quit
+	l.Info("shutting down server...")
 
-	l.Info("shutdown server ...")
+	cancel()
+	ctxShutdown, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-
-	defer cancel()
-
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(ctxShutdown); err != nil {
 		l.Error("server shutdown:", slog.Any("error", err))
 	}
 
-	select {
-	case <-ctx.Done():
-		l.Warn("server shutdown: timeout of 5 seconds.")
-	}
-
+	<-ctxShutdown.Done()
 	l.Info("server exiting")
-
-	os.Exit(0)
 }

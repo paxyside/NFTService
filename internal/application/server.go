@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -13,26 +14,23 @@ import (
 	"nft_service/internal/persistence"
 	"nft_service/internal/service"
 	"strings"
+	"time"
 )
 
-func setupServer(db *database.DB, cfg *config.Config) (*gin.Engine, error) {
+func setupServer(ctx context.Context, db *database.DB, cfg *config.Config) (*gin.Engine, error) {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(controller.LoggerMiddleware())
 
-	// ping
 	r.GET("/api/ping", controller.Ping)
 
-	// swagger docs
 	r.GET("/api/docs/spec", func(c *gin.Context) {
 		c.File("./docs/swagger.json")
 	})
 	r.GET("/api/docs/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.URL("/api/docs/spec")))
 
-	// init repo
 	tokenRepo := persistence.NewTokenRepo(db.Conn)
 
-	// init contract
 	contractUrl, err := utils.GenerateInfuraURL(strings.ToLower(cfg.NetworkName), cfg.InfuraApiKey)
 	if err != nil {
 		return nil, errors.New("failed to generate Infura URL" + err.Error())
@@ -48,16 +46,15 @@ func setupServer(db *database.DB, cfg *config.Config) (*gin.Engine, error) {
 		return nil, errors.New("failed to create contract service" + err.Error())
 	}
 
-	// init service
-	tokenService := service.NewTokenService(tokenRepo, contractService)
+	go contractService.StartCacheUpdater(ctx, 30*time.Second)
 
-	// init handler
+	tokenService := service.NewTokenService(tokenRepo, contractService)
 	tokenHandler := controller.NewTokenHandler(tokenService)
 
-	// init routes
 	r.POST("/api/tokens/create", tokenHandler.Create)
 	r.GET("/api/tokens/list", tokenHandler.List)
 	r.GET("/api/tokens/total_supply", tokenHandler.Total)
+	r.GET("/api/tokens/total_supply_exact", tokenHandler.ExactTotal)
 
 	return r, nil
 }

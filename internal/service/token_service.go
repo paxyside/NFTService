@@ -48,3 +48,7 @@ func (t *TokenService) ListTokens(limit, offset int) ([]*domain.Token, error) {
 func (t *TokenService) TotalSupply() (*big.Int, error) {
 	return t.contract.TotalSupply()
 }
+
+func (t *TokenService) ExactTotalSupply() (*big.Int, error) {
+	return t.contract.ExactTotalSupply()
+}
