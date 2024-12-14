@@ -3,6 +3,7 @@ package contract
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -83,4 +84,39 @@ func (m *NFTContract) Mint(owner string, uniqueHash string, mediaURL string) (st
 	}
 
 	return signedTx.Hash().Hex(), nil
+}
+
+func (m *NFTContract) TotalSupply() (*big.Int, error) {
+
+	var (
+		toAddress   = common.HexToAddress(m.cfg.ContractAddress)
+		totalSupply *big.Int
+	)
+
+	parsedAbi, err := abi.JSON(strings.NewReader(m.contractABI))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse contract ABI: %w", err)
+	}
+
+	callData, err := parsedAbi.Pack("totalSupply")
+	if err != nil {
+		return nil, fmt.Errorf("failed to pack totalSupply call data: %w", err)
+	}
+
+	msg := ethereum.CallMsg{
+		To:   &toAddress,
+		Data: callData,
+	}
+
+	result, err := m.client.CallContract(context.Background(), msg, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call totalSupply: %w", err)
+	}
+
+	err = parsedAbi.UnpackIntoInterface(&totalSupply, "totalSupply", result)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unpack totalSupply result: %w", err)
+	}
+
+	return totalSupply, nil
 }
