@@ -5,6 +5,8 @@ NFT Service is a backend applications designed for seamless interaction with ERC
 The service provides REST APIs for UNIT operations, including querying total supply, creating unique tokens, and retrieving token lists.
 It integrates with smart contracts to execute blockchain transactions and stores token metadata in a PostgreSQL.
 
+[Test task](https://confluence.rocknblock.io/pages/viewpage.action?pageId=1082566)
+
 [Swagger docs](http://127.0.0.1:8008/api/docs/swagger/index.html)
 
 ## Installed Packages
