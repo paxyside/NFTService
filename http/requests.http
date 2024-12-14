@@ -1,0 +1,22 @@
+### ping
+GET http://127.0.0.1:8008/api/ping
+
+### create token
+POST http://127.0.0.1:8008/api/tokens/create
+Content-Type: application/json
+
+{
+  "owner": "0xe7513343c3EaD5c17f5E9d857a4b7faB07F56d0a",
+  "media_url": "https://example.com/image.jpg"
+}
+
+
+### list tokens
+GET http://127.0.0.1:8008/api/tokens/list
+
+### total supply
+GET http://127.0.0.1:8008/api/tokens/total_supply
+
+### total supply exact
+GET http://127.0.0.1:8008/api/tokens/total_supply_exact
+

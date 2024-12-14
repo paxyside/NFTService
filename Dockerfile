@@ -8,7 +8,7 @@ COPY go.mod go.sum ./
 RUN go mod download && \
     go mod verify
 COPY . .
-# go test -v ./...
+RUN go test -v ./...
 RUN CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags="-s -w" -o \
     /usr/bin/nft_service ./cmd/nft_service/main.go
 
