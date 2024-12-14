@@ -40,3 +40,44 @@ func (t TokenRepo) CreateToken(token *domain.Token) error {
 
 	return nil
 }
+
+func (t TokenRepo) ListTokens(limit, offset int) ([]*domain.Token, error) {
+
+	var tokens []*domain.Token
+
+	query := `SELECT * FROM nfts LIMIT $1 OFFSET $2`
+
+	rows, err := t.db.Query(context.TODO(), query, limit, offset)
+	defer rows.Close()
+
+	if err != nil {
+		switch {
+		case strings.Contains(err.Error(), "no rows"):
+			return tokens, nil
+		default:
+			return nil, errors.New("token receipt error " + err.Error())
+		}
+	}
+
+	for rows.Next() {
+		token := &domain.Token{}
+		err := rows.Scan(
+			&token.ID,
+			&token.UniqueHash,
+			&token.TxHash,
+			&token.MediaUrl,
+			&token.Owner,
+			&token.CreatedAt,
+		)
+		if err != nil {
+			return nil, errors.New("scan error " + err.Error())
+		}
+		tokens = append(tokens, token)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, errors.New("rows scan error " + err.Error())
+	}
+
+	return tokens, err
+}

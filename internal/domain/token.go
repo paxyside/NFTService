@@ -13,6 +13,7 @@ const (
 
 type TokenRepository interface {
 	CreateToken(token *Token) error
+	ListTokens(limit, offset int) ([]*Token, error)
 }
 
 type Token struct {

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"math/big"
 	"nft_service/infrastructure/utils"
 	"nft_service/internal/contract"
 	"nft_service/internal/domain"
@@ -38,4 +39,12 @@ func (t *TokenService) CreateToken(token *domain.Token) (*domain.Token, error) {
 	}
 
 	return token, nil
+}
+
+func (t *TokenService) ListTokens(limit, offset int) ([]*domain.Token, error) {
+	return t.repo.ListTokens(limit, offset)
+}
+
+func (t *TokenService) TotalSupply() (*big.Int, error) {
+	return t.contract.TotalSupply()
 }
