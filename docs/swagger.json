@@ -1,0 +1,279 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "NFT Service",
+    "description": "The service integrates with the NFT-token and allows you to interact with it",
+    "termsOfService": "http://someurl.oxox",
+    "contact": {
+      "name": "Telegram: @pavel_gr21",
+      "email": "vhser@yandex.ru"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://en.wikipedia.org/wiki/MIT_License"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8008",
+      "description": " Server-1"
+    }
+  ],
+  "paths": {
+    "/api/ping": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "pong",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Health"
+        ],
+        "description": " Checks if the service is up and running."
+      }
+    },
+    "/api/tokens/create": {
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Successfully created token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to create token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "NFT Token"
+        ],
+        "description": " Creates a new NFT token and assigns it to the provided owner's address with the specified media URL.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTokenRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/tokens/list": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful response containing the list of tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "NFT Token"
+        ],
+        "description": " Returns a list of NFT tokens. If `limit` and `offset` parameters are provided, they will be used for pagination. By default, `limit` is set to 200, and `offset` is 0. The `limit` value must be between 1 and 500.",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Pagination offset, default 0",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "description": "Pagination offset, default 0"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of pagination elements, default 200, max 500",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "description": "Number of pagination elements, default 200, max 500"
+            }
+          }
+        ]
+      }
+    },
+    "/api/tokens/total_supply": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful response with total supply",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "NFT Token"
+        ],
+        "description": " Returns the total number of NFT tokens minted on the blockchain."
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateTokenRequest": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string"
+          },
+          "media_url": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "SupplyResponse": {
+        "type": "object",
+        "properties": {
+          "total_supply": {
+            "type": "string"
+          }
+        }
+      },
+      "Token": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "unique_hash": {
+            "type": "string"
+          },
+          "tx_hash": {
+            "type": "string"
+          },
+          "media_url": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "domain.Token": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "unique_hash": {
+            "type": "string"
+          },
+          "tx_hash": {
+            "type": "string"
+          },
+          "media_url": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}
