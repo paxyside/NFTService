@@ -29,8 +29,10 @@ func setupServer(db *database.DB, cfg *config.Config) (*gin.Engine, error) {
 	})
 	r.GET("/api/docs/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.URL("/api/docs/spec")))
 
+	// init repo
 	tokenRepo := persistence.NewTokenRepo(db.Conn)
 
+	// init contract
 	contractUrl, err := utils.GenerateInfuraURL(strings.ToLower(cfg.NetworkName), cfg.InfuraApiKey)
 	if err != nil {
 		return nil, errors.New("failed to generate Infura URL" + err.Error())
@@ -46,10 +48,16 @@ func setupServer(db *database.DB, cfg *config.Config) (*gin.Engine, error) {
 		return nil, errors.New("failed to create contract service" + err.Error())
 	}
 
+	// init service
 	tokenService := service.NewTokenService(tokenRepo, contractService)
+
+	// init handler
 	tokenHandler := controller.NewTokenHandler(tokenService)
 
-	r.POST("/api/tokens/create", tokenHandler.CreateToken)
+	// init routes
+	r.POST("/api/tokens/create", tokenHandler.Create)
+	r.GET("/api/tokens/list", tokenHandler.List)
+	r.GET("/api/tokens/total_supply", tokenHandler.Total)
 
 	return r, nil
 }
