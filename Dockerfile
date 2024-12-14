@@ -24,6 +24,7 @@ WORKDIR /app
 COPY --from=build /usr/bin/nft_service .
 COPY migrations ./migrations/
 COPY docs/swagger.json ./docs/swagger.json
+COPY ./contract_abi.json ./contract_abi.json
 HEALTHCHECK --interval=20s --timeout=5s --retries=4 --start-period=20s \
     CMD curl -fsS -m5 -A'docker-healthcheck' http://127.0.0.1/api/ping
 CMD ["./nft_service"]
