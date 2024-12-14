@@ -66,8 +66,6 @@ go-swagger3 --module-path . --main-file-path ./cmd/nft_service/main.go --output 
 .
 ├── cmd/
 │   └── nft_service/                 # Main entry point for the application
-├── contract_abi.json                # ABI for interacting with the NFT smart contract
-├── docker-compose.yaml              # Docker Compose configuration
 ├── docs/
 │   └── swagger.json                 # Swagger API documentation
 ├── infrastructure/
@@ -84,6 +82,9 @@ go-swagger3 --module-path . --main-file-path ./cmd/nft_service/main.go --output 
 ├── migrations/                      # Database migration files
 │   ├── 000001_base_schema.up.sql    # Initial schema setup
 │   └── 000001_base_schema.down.sql  # Rollback for the initial schema
+├── contract_abi.json                # ABI for interacting with the NFT smart contract
+├── docker-compose.yaml              # Docker Compose configuration
+├── Dockerfile                       # Dockerfile for building the application
 ├── Makefile                         # Build and run commands for the project
 ├── go.mod                           # Go dependencies
 ├── go.sum                           # Go dependency checksums
