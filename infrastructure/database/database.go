@@ -104,6 +104,5 @@ func applyMigrations(DBURI string) error {
 		return fmt.Errorf("failed to close migrate instance: sourceErr: %v, dbErr: %v", sourceErr, dbErr)
 	}
 
-	log.Println("database migrations applied successfully")
 	return nil
 }

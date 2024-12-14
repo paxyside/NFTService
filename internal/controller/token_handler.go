@@ -140,9 +140,9 @@ func (h *TokenHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, tokens)
 }
 
-// Total Supply
-// @Summary Retrieve the total supply of NFT tokens
-// @Description Returns the total number of NFT tokens minted on the blockchain.
+// Total
+// @Summary Retrieve the total supply of NFT tokens from cache
+// @Description Returns the total number of NFT tokens minted on the blockchain from cache.
 // @Tag NFT Token
 // @Success 200 {object} SupplyResponse "Successful response with total supply"
 // @Failure 400 {object} ErrorResponse "Invalid request parameters"
@@ -158,6 +158,41 @@ func (h *TokenHandler) Total(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
 	totalSupply, err = h.tokenService.TotalSupply()
+	if err != nil {
+		l.Error("failed to get total supply", slog.Any("error", err))
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"request_id": c.GetString("requestId"),
+			"error":      "failed to get total supply",
+		})
+		return
+	}
+
+	response := SupplyResponse{
+		TotalSupply: totalSupply.String(),
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// ExactTotal
+// @Summary Retrieve the exact total supply of NFT tokens
+// @Description Returns exact the total number of NFT tokens minted on the blockchain.
+// @Tag NFT Token
+// @Success 200 {object} SupplyResponse "Successful response with total supply"
+// @Failure 400 {object} ErrorResponse "Invalid request parameters"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /api/tokens/total_supply_exact [get]
+func (h *TokenHandler) ExactTotal(c *gin.Context) {
+	var (
+		l           = slog.Default()
+		totalSupply *big.Int
+		err         error
+	)
+
+	c.Header("Content-Type", "application/json")
+
+	totalSupply, err = h.tokenService.ExactTotalSupply()
 	if err != nil {
 		l.Error("failed to get total supply", slog.Any("error", err))
 

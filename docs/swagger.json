@@ -190,7 +190,47 @@
         "tags": [
           "NFT Token"
         ],
-        "description": " Returns the total number of NFT tokens minted on the blockchain."
+        "description": " Returns the total number of NFT tokens minted on the blockchain from cache."
+      }
+    },
+    "/api/tokens/total_supply_exact": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful response with total supply",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "NFT Token"
+        ],
+        "description": " Returns exact the total number of NFT tokens minted on the blockchain."
       }
     }
   },

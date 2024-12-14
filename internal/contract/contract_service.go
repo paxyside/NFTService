@@ -9,15 +9,21 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"log/slog"
 	"math/big"
 	"nft_service/infrastructure/config"
 	"strings"
+	"sync"
+	"time"
 )
 
 type NFTContract struct {
-	client      *ethclient.Client
-	cfg         *config.Config
-	contractABI string
+	client       *ethclient.Client
+	cfg          *config.Config
+	contractABI  string
+	cache        *big.Int
+	cacheUpdated int64
+	mu           sync.RWMutex
 }
 
 func NewNFTContract(url string, cfg *config.Config, contractABI string) (*NFTContract, error) {
@@ -25,14 +31,23 @@ func NewNFTContract(url string, cfg *config.Config, contractABI string) (*NFTCon
 	if err != nil {
 		return nil, err
 	}
-	return &NFTContract{
+
+	contract := &NFTContract{
 		client:      client,
 		cfg:         cfg,
 		contractABI: contractABI,
-	}, nil
+	}
+
+	return contract, nil
 }
 
 func (m *NFTContract) Mint(owner string, uniqueHash string, mediaURL string) (string, error) {
+
+	var (
+		l         = slog.Default()
+		startTime = time.Now()
+	)
+
 	parsedAbi, err := abi.JSON(strings.NewReader(m.contractABI))
 	if err != nil {
 		return "", fmt.Errorf("failed to parse contract ABI: %w", err)
@@ -83,11 +98,14 @@ func (m *NFTContract) Mint(owner string, uniqueHash string, mediaURL string) (st
 		return "", fmt.Errorf("failed to send transaction: %w", err)
 	}
 
+	latency := time.Now().Sub(startTime).Milliseconds()
+	l.Info("mint transaction sent", slog.Float64("latency", float64(latency)*0.001))
+
 	return signedTx.Hash().Hex(), nil
 }
 
-func (m *NFTContract) TotalSupply() (*big.Int, error) {
-
+// getTotalSupplyFromContract returns total supply from contract
+func (m *NFTContract) getTotalSupplyFromContract() (*big.Int, error) {
 	var (
 		toAddress   = common.HexToAddress(m.cfg.ContractAddress)
 		totalSupply *big.Int
@@ -117,6 +135,43 @@ func (m *NFTContract) TotalSupply() (*big.Int, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to unpack totalSupply result: %w", err)
 	}
+
+	return totalSupply, nil
+}
+
+// TotalSupply returning total supply from cache (not exact, but more efficient)
+func (m *NFTContract) TotalSupply() (*big.Int, error) {
+	m.mu.RLock()
+	cache := m.cache
+	cacheUpdated := m.cacheUpdated
+	m.mu.RUnlock()
+
+	if cache != nil && time.Now().Unix()-cacheUpdated < 60 {
+		return cache, nil
+	}
+	totalSupply, err := m.updateTotalSupplyCache()
+	if err != nil {
+		return nil, err
+	}
+
+	return totalSupply, nil
+}
+
+// ExactTotalSupply returning exact total supply
+func (m *NFTContract) ExactTotalSupply() (*big.Int, error) {
+	return m.getTotalSupplyFromContract()
+}
+
+// updateTotalSupplyCache update cache with total supply
+func (m *NFTContract) updateTotalSupplyCache() (*big.Int, error) {
+	totalSupply, err := m.getTotalSupplyFromContract()
+	if err != nil {
+		return nil, err
+	}
+	m.mu.Lock()
+	m.cache = totalSupply
+	m.cacheUpdated = time.Now().Unix()
+	m.mu.Unlock()
 
 	return totalSupply, nil
 }
