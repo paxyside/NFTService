@@ -44,6 +44,16 @@ services:
       retries: 2
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - nft_network
+
 networks:
   nft_network:
     external: true
