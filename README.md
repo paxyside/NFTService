@@ -9,9 +9,12 @@ It integrates with smart contracts to execute blockchain transactions and stores
 
 [Swagger docs](http://127.0.0.1:8008/api/docs/swagger/index.html)
 
+[Prometheus metrics](http://127.0.0.1:9090)
+
 ## Installed Packages
 - [Go-Ethereum](https://github.com/ethereum/go-ethereum)
 - [GIN Web Framework](https://github.com/gin-gonic/gin)
+- [Gin-Prometheus](https://github.com/zsais/go-gin-prometheus)
 - [PGXPool for PostgreSQL](https://github.com/jackc/pgx)
 - [Go-Swagger3](https://github.com/parvez3019/go-swagger3)
 - [Go-Migrate](https://github.com/golang-migrate/migrate)
@@ -29,10 +32,16 @@ Step 2: Environment Configuration
 cp .env.example .env && chmod 600 .env
 ```
 
-Step 3: Create Docker Network (First Time Only)
+Step 3: Export Environment Variables
+```bash
+export $(cat .env | xargs)
+```
+
+Step 4: Create Docker Network (First Time Only)
 ```bash
 docker network create ntf_network
 ```
+
 
 ## Start application using Docker Compose
 ```bash
@@ -79,7 +88,7 @@ go-swagger3 --module-path . --main-file-path ./cmd/nft_service/main.go --output 
 │   ├── contract/                    # Contract service for interacting with the blockchain
 │   ├── controller/                  # HTTP handlers and middleware
 │   ├── domain/                      # Domain models and business logic
-│   ├── persistence/                 # Database repository implementations
+│   ├── persistence/                 # Database repository implementations and mock unit-tests
 │   └── service/                     # Service layer for token management
 ├── migrations/                      # Database migration files
 │   ├── 000001_base_schema.up.sql    # Initial schema setup
