@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	ginprom "github.com/zsais/go-gin-prometheus"
 	"nft_service/infrastructure/config"
 	"nft_service/infrastructure/database"
 	"nft_service/infrastructure/utils"
@@ -21,6 +22,9 @@ func setupServer(ctx context.Context, db *database.DB, cfg *config.Config) (*gin
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(controller.LoggerMiddleware())
+
+	prom := ginprom.NewPrometheus("gin")
+	prom.Use(r)
 
 	r.GET("/api/ping", controller.Ping)
 

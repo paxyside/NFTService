@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "nft_service"
+    static_configs:
+      - targets: ["nft_service:8008"]
