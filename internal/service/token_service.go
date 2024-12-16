@@ -29,7 +29,7 @@ func (t *TokenService) CreateToken(token *domain.Token) (*domain.Token, error) {
 		return nil, err
 	}
 
-	token.TxHash, err = t.contract.Mint(token.Owner, token.UniqueHash, token.MediaUrl)
+	token, err = t.contract.Mint(token)
 	if err != nil {
 		return nil, err
 	}

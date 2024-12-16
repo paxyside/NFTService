@@ -236,6 +236,7 @@
   },
   "components": {
     "schemas": {
+      "": {},
       "CreateTokenRequest": {
         "type": "object",
         "properties": {
@@ -284,6 +285,9 @@
           "owner": {
             "type": "string"
           },
+          "token_id": {
+            "$ref": "#/components/schemas/"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -307,6 +311,9 @@
           },
           "owner": {
             "type": "string"
+          },
+          "token_id": {
+            "$ref": "#/components/schemas/"
           },
           "created_at": {
             "type": "string",
