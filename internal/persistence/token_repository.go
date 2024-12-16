@@ -46,7 +46,7 @@ func (t TokenRepo) CreateToken(token *domain.Token) error {
 	return nil
 }
 
-func (t TokenRepo) UpdateTokenIDWithTransaction(tokenID, txHash string) error {
+func (t TokenRepo) UpdateTokenID(tokenID, txHash string) error {
 	tx, err := t.db.Begin(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to start transaction: %w", err)
