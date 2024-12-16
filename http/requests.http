@@ -6,7 +6,7 @@ POST http://127.0.0.1:8008/api/tokens/create
 Content-Type: application/json
 
 {
-  "owner": "0xe7513343c3EaD5c17f5E9d857a4b7faB07F56d0a",
+  "owner": "0xC92f65c05ccdeF650fe1fdeC0221E5f993ea8956",
   "media_url": "https://example.com/image.jpg"
 }
 
@@ -17,7 +17,7 @@ Content-Type: application/json
 {
   "from": "0xC92f65c05ccdeF650fe1fdeC0221E5f993ea8956",
   "to": "0xe7513343c3EaD5c17f5E9d857a4b7faB07F56d0a",
-  "token_id": "128"
+  "token_id": "129"
 }
 
 
