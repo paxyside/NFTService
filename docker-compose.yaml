@@ -13,9 +13,10 @@ services:
     restart: unless-stopped
     environment:
       - DB_URI=${DB_URI} # postgresql://postgres:pass@database:5432/postgres?sslmode=disable
-      - HOST=${HOST} # 127.0.0.1
-      - PORT=${PORT} # 8008
+      - HOST=${HOST}
+      - PORT=${PORT:-8008} # 8008
       - GIN_MODE=${GIN_MODE:-debug} # debug | release
+      - CACHE_UPDATE_INTERVAL=${CACHE_UPDATE_INTERVAL:-30} # 30s
       - INFURA_API_KEY=${INFURA_API_KEY}
       - NETWORK_NAME=${NETWORK_NAME}
       - CHAIN_ID=${CHAIN_ID}

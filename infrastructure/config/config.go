@@ -46,14 +46,14 @@ func LoadConfig() (*Config, error) {
 
 	cacheUpdateInterval := os.Getenv("CACHE_UPDATE_INTERVAL")
 	if cacheUpdateInterval == "" {
-		l.Error("CACHE_UPDATE_DURATION is not set")
-		return nil, errors.New("CACHE_UPDATE_DURATION is not set")
+		l.Error("CACHE_UPDATE_INTERVAL is not set")
+		return nil, errors.New("CACHE_UPDATE_INTERVAL is not set")
 	}
 
 	intCacheUpdateInterval, err := strconv.ParseInt(cacheUpdateInterval, 10, 64)
 	if err != nil {
-		l.Error("CACHE_UPDATE_DURATION is not integer", "error", err)
-		return nil, errors.New("CACHE_UPDATE_DURATION is not integer")
+		l.Error("CACHE_UPDATE_INTERVAL is not integer", "error", err)
+		return nil, errors.New("CACHE_UPDATE_INTERVAL is not integer")
 	}
 
 	userAddress := os.Getenv("USER_ADDRESS")
