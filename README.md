@@ -22,9 +22,8 @@ It integrates with smart contracts to execute blockchain transactions and stores
 ## Prerequisites
 Step 1: Clone repository
 ```bash
-mkdir nft_service &&
-cd nft_service &&
-git clone https://github.com/paxyside/NFTService.git
+git clone https://github.com/paxyside/NFTService.git nft_service
+cd nft_service
 ```
 
 Step 2: Environment Configuration
