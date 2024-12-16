@@ -46,15 +46,29 @@ func (t TokenRepo) CreateToken(token *domain.Token) error {
 	return nil
 }
 
-func (t TokenRepo) UpdateTokenID(tokenID, txHash string) error {
+func (t TokenRepo) UpdateTokenIDWithTransaction(tokenID, txHash string) error {
+	tx, err := t.db.Begin(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(context.Background())
+		}
+	}()
+
 	query := `UPDATE nfts SET token_id = $1 WHERE tx_hash = $2`
-	row, err := t.db.Exec(context.Background(), query, tokenID, txHash)
+	row, err := tx.Exec(context.Background(), query, tokenID, txHash)
 	if err != nil {
 		return fmt.Errorf("failed to update token id: %w", err)
 	}
 
 	if row.RowsAffected() == 0 {
 		return errors.New("token with this tx_hash does not exist")
+	}
+
+	if err = tx.Commit(context.Background()); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil
