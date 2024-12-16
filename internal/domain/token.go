@@ -22,6 +22,7 @@ type Token struct {
 	TxHash     string    `json:"tx_hash,omitempty"`
 	MediaUrl   string    `json:"media_url" binding:"required"`
 	Owner      string    `json:"owner" binding:"required"`
+	TokenID    int       `json:"token_id,omitempty"`
 	CreatedAt  time.Time `json:"created_at,omitempty"`
 }
 
