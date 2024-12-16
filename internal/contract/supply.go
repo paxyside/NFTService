@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"log/slog"
 	"math/big"
-	"strings"
 	"time"
 )
 
@@ -41,12 +40,7 @@ func (m *NFTContract) getTotalSupplyFromContract() (*big.Int, error) {
 		totalSupply *big.Int
 	)
 
-	parsedAbi, err := abi.JSON(strings.NewReader(m.contractABI))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse contract ABI: %w", err)
-	}
-
-	callData, err := parsedAbi.Pack("totalSupply")
+	callData, err := m.parsedABI.Pack("totalSupply")
 	if err != nil {
 		return nil, fmt.Errorf("failed to pack totalSupply call data: %w", err)
 	}
@@ -64,7 +58,7 @@ func (m *NFTContract) getTotalSupplyFromContract() (*big.Int, error) {
 		return nil, fmt.Errorf("failed to call totalSupply: %w", err)
 	}
 
-	err = parsedAbi.UnpackIntoInterface(&totalSupply, "totalSupply", result)
+	err = m.parsedABI.UnpackIntoInterface(&totalSupply, "totalSupply", result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unpack totalSupply result: %w", err)
 	}
@@ -84,4 +78,23 @@ func (m *NFTContract) updateTotalSupplyCache() (*big.Int, error) {
 	m.mu.Unlock()
 
 	return totalSupply, nil
+}
+
+func (m *NFTContract) StartCacheUpdater(ctx context.Context, interval time.Duration) {
+	l := slog.Default()
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			_, err := m.updateTotalSupplyCache()
+			if err != nil {
+				l.Error("failed to update total supply cache", slog.Any("error", err))
+			}
+		case <-ctx.Done():
+			l.Info("cache updater stopped")
+			return
+		}
+	}
 }

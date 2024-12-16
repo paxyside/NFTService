@@ -8,6 +8,7 @@ import (
 	_ "net/http/pprof"
 	"nft_service/infrastructure/config"
 	"nft_service/infrastructure/database"
+	"nft_service/infrastructure/rabbit"
 	"os"
 	"os/signal"
 	"runtime"
@@ -42,7 +43,14 @@ func StartApp() {
 	}
 	defer db.Close()
 
-	server, err := setupServer(ctx, db, cfg)
+	mq, err := rabbit.NewRabbitMQ(cfg.AMQPURI)
+	if err != nil {
+		l.Error("failed to connect to rabbitmq", slog.Any("error", err))
+		os.Exit(1)
+	}
+	defer mq.Close()
+
+	server, err := setupServer(ctx, db, cfg, mq)
 	if err != nil {
 		l.Error("failed to setup server", slog.Any("error", err))
 		os.Exit(1)

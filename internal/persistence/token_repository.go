@@ -2,10 +2,10 @@ package persistence
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"math/big"
 	"nft_service/internal/domain"
 	"strings"
 )
@@ -19,26 +19,20 @@ func NewTokenRepo(db *pgxpool.Pool) *TokenRepo {
 }
 
 func (t TokenRepo) CreateToken(token *domain.Token) error {
-	var tokenID int64
-	if token.TokenID != nil {
-		if !token.TokenID.IsInt64() {
-			return fmt.Errorf("token_id value is too large for BIGINT")
-		}
-		tokenID = token.TokenID.Int64()
-	}
 
-	query := `INSERT INTO nfts (unique_hash, tx_hash, media_url, owner, token_id)
-			  VALUES ($1, $2, $3, $4, $5)
+	var tokenId sql.NullString
+
+	query := `INSERT INTO nfts (unique_hash, tx_hash, media_url, owner)
+			  VALUES ($1, $2, $3, $4)
 			  RETURNING id, unique_hash, tx_hash, media_url, owner, token_id, created_at`
 
-	var returnedTokenID int64
-	err := t.db.QueryRow(context.Background(), query, token.UniqueHash, token.TxHash, token.MediaUrl, token.Owner, tokenID).Scan(
+	err := t.db.QueryRow(context.Background(), query, token.UniqueHash, token.TxHash, token.MediaUrl, token.Owner).Scan(
 		&token.ID,
 		&token.UniqueHash,
 		&token.TxHash,
 		&token.MediaUrl,
 		&token.Owner,
-		&returnedTokenID,
+		&tokenId,
 		&token.CreatedAt,
 	)
 
@@ -49,7 +43,19 @@ func (t TokenRepo) CreateToken(token *domain.Token) error {
 		return fmt.Errorf("failed to create token: %w", err)
 	}
 
-	token.TokenID = new(big.Int).SetInt64(returnedTokenID)
+	return nil
+}
+
+func (t TokenRepo) UpdateTokenID(tokenID, txHash string) error {
+	query := `UPDATE nfts SET token_id = $1 WHERE tx_hash = $2`
+	row, err := t.db.Exec(context.Background(), query, tokenID, txHash)
+	if err != nil {
+		return fmt.Errorf("failed to update token id: %w", err)
+	}
+
+	if row.RowsAffected() == 0 {
+		return errors.New("token with this tx_hash does not exist")
+	}
 
 	return nil
 }
@@ -74,7 +80,6 @@ func (t TokenRepo) ListTokens(limit, offset int) ([]*domain.Token, error) {
 
 	for rows.Next() {
 		token := &domain.Token{}
-		var tokenID int64
 
 		err := rows.Scan(
 			&token.ID,
@@ -83,13 +88,11 @@ func (t TokenRepo) ListTokens(limit, offset int) ([]*domain.Token, error) {
 			&token.MediaUrl,
 			&token.Owner,
 			&token.CreatedAt,
-			&tokenID,
+			&token.TokenID,
 		)
 		if err != nil {
 			return nil, errors.New("scan error " + err.Error())
 		}
-
-		token.TokenID = big.NewInt(tokenID)
 
 		tokens = append(tokens, token)
 	}

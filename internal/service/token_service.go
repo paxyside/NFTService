@@ -1,19 +1,24 @@
 package service
 
 import (
+	"encoding/json"
+	"github.com/rabbitmq/amqp091-go"
 	"math/big"
+	"nft_service/infrastructure/rabbit"
 	"nft_service/infrastructure/utils"
 	"nft_service/internal/contract"
 	"nft_service/internal/domain"
 )
 
 type TokenService struct {
-	repo     domain.TokenRepository
-	contract contract.NFTService
+	repo      domain.TokenRepository
+	contract  contract.NFTService
+	mq        *rabbit.RabbitMQ
+	queueName amqp091.Queue
 }
 
-func NewTokenService(repo domain.TokenRepository, contract contract.NFTService) *TokenService {
-	return &TokenService{repo: repo, contract: contract}
+func NewTokenService(repo domain.TokenRepository, contract contract.NFTService, mq *rabbit.RabbitMQ, queueName amqp091.Queue) *TokenService {
+	return &TokenService{repo: repo, contract: contract, mq: mq, queueName: queueName}
 }
 
 func (t *TokenService) CreateToken(token *domain.Token) (*domain.Token, error) {
@@ -35,6 +40,15 @@ func (t *TokenService) CreateToken(token *domain.Token) (*domain.Token, error) {
 	}
 
 	if err := t.repo.CreateToken(token); err != nil {
+		return nil, err
+	}
+
+	queueBody, err := json.Marshal(token.TxHash)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := t.mq.Publish(t.queueName.Name, queueBody); err != nil {
 		return nil, err
 	}
 

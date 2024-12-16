@@ -2,19 +2,19 @@ package domain
 
 import (
 	"errors"
-	"math/big"
 	"net/url"
 	"regexp"
 	"time"
 )
 
 const (
-	ethereumOwnerAddressExpression = `^0x[a-fA-F0-9]{40}$`
+	ethereumAddressExpression = `^0x[a-fA-F0-9]{40}$`
 )
 
 type TokenRepository interface {
 	CreateToken(token *Token) error
 	ListTokens(limit, offset int) ([]*Token, error)
+	UpdateTokenID(tokenID, txHash string) error
 }
 
 type Token struct {
@@ -23,7 +23,7 @@ type Token struct {
 	TxHash     string    `json:"tx_hash,omitempty"`
 	MediaUrl   string    `json:"media_url" binding:"required"`
 	Owner      string    `json:"owner" binding:"required"`
-	TokenID    *big.Int  `json:"token_id,omitempty"`
+	TokenID    string    `json:"token_id,omitempty"`
 	CreatedAt  time.Time `json:"created_at,omitempty"`
 }
 
@@ -43,7 +43,7 @@ func (t *Token) ValidateToCreate() error {
 		return errors.New("invalid media_url, must be a valid http or https URL")
 	}
 
-	rgx, err = regexp.Compile(ethereumOwnerAddressExpression)
+	rgx, err = regexp.Compile(ethereumAddressExpression)
 
 	if err != nil {
 		return errors.New("failed to compile Ethereum address regex: " + err.Error())

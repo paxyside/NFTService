@@ -286,7 +286,6 @@
   },
   "components": {
     "schemas": {
-      "": {},
       "CreateTokenRequest": {
         "type": "object",
         "properties": {
@@ -336,7 +335,7 @@
             "type": "string"
           },
           "token_id": {
-            "$ref": "#/components/schemas/"
+            "type": "string"
           },
           "created_at": {
             "type": "string",
@@ -385,7 +384,7 @@
             "type": "string"
           },
           "token_id": {
-            "$ref": "#/components/schemas/"
+            "type": "string"
           },
           "created_at": {
             "type": "string",
