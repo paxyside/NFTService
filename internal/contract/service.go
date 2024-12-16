@@ -4,13 +4,15 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"nft_service/infrastructure/config"
+	"nft_service/internal/domain"
 	"sync"
 )
 
 type NFTService interface {
-	Mint(owner string, uniqueHash string, mediaURL string) (string, error)
+	Mint(token *domain.Token) (*domain.Token, error)
 	TotalSupply() (*big.Int, error)
 	ExactTotalSupply() (*big.Int, error)
+	TransferToken(from string, to string, tokenId *big.Int) (string, error)
 }
 
 type NFTContract struct {

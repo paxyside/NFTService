@@ -55,6 +55,7 @@ func setupServer(ctx context.Context, db *database.DB, cfg *config.Config) (*gin
 	tokenHandler := controller.NewTokenHandler(tokenService)
 
 	r.POST("/api/tokens/create", tokenHandler.Create)
+	r.POST("/api/tokens/transfer", tokenHandler.Transfer)
 	r.GET("/api/tokens/list", tokenHandler.List)
 	r.GET("/api/tokens/total_supply", tokenHandler.Total)
 	r.GET("/api/tokens/total_supply_exact", tokenHandler.ExactTotal)

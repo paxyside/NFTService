@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE nfts DROP COLUMN token_id;
+
+COMMIT;

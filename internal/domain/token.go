@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"math/big"
 	"net/url"
 	"regexp"
 	"time"
@@ -22,6 +23,7 @@ type Token struct {
 	TxHash     string    `json:"tx_hash,omitempty"`
 	MediaUrl   string    `json:"media_url" binding:"required"`
 	Owner      string    `json:"owner" binding:"required"`
+	TokenID    *big.Int  `json:"token_id,omitempty"`
 	CreatedAt  time.Time `json:"created_at,omitempty"`
 }
 

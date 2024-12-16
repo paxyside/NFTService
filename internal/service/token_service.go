@@ -29,7 +29,7 @@ func (t *TokenService) CreateToken(token *domain.Token) (*domain.Token, error) {
 		return nil, err
 	}
 
-	token.TxHash, err = t.contract.Mint(token.Owner, token.UniqueHash, token.MediaUrl)
+	token, err = t.contract.Mint(token)
 	if err != nil {
 		return nil, err
 	}
@@ -51,4 +51,8 @@ func (t *TokenService) TotalSupply() (*big.Int, error) {
 
 func (t *TokenService) ExactTotalSupply() (*big.Int, error) {
 	return t.contract.ExactTotalSupply()
+}
+
+func (t *TokenService) TransferToken(from string, to string, tokenId *big.Int) (string, error) {
+	return t.contract.TransferToken(from, to, tokenId)
 }

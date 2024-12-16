@@ -23,6 +23,16 @@ type CreateTokenRequest struct {
 	MediaUrl string `json:"media_url" binding:"required"`
 }
 
+type TransferTokenRequest struct {
+	From    string `json:"from" binding:"required"`
+	To      string `json:"to" binding:"required"`
+	TokenId string `json:"token_id" binding:"required"`
+}
+
+type TransferTokenResponse struct {
+	TxId string `json:"tx_id"`
+}
+
 type SupplyResponse struct {
 	TotalSupply string `json:"total_supply"`
 }
@@ -208,4 +218,53 @@ func (h *TokenHandler) ExactTotal(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+// Transfer NFT Token to new owner
+// @Summary Transfer NFT Token to new owner
+// @Description Transfer of the NFT token to a new owner
+// @Tag NFT Token
+// @Param token body TransferTokenRequest true "Data required to transfer NFT token"
+// @Success 201 {object} TransferTokenResponse "Successfully transferred NFT token"
+// @Failure 400 {object} ErrorResponse "Invalid request data"
+// @Failure 500 {object} ErrorResponse "Failed to transfer NFT token"
+// @Router /api/tokens/transfer [post]
+func (h *TokenHandler) Transfer(c *gin.Context) {
+	var (
+		l       = slog.Default()
+		request = new(TransferTokenRequest)
+	)
+
+	if err := c.BindJSON(request); err != nil {
+		l.Error("invalid request", slog.Any("error", err))
+		c.JSON(http.StatusBadRequest, &gin.H{
+			"request_id": c.GetString("requestId"),
+			"error":      "invalid request",
+		})
+		return
+	}
+
+	tokenId, ok := new(big.Int).SetString(request.TokenId, 10)
+	if !ok {
+		l.Error("invalid token id", slog.Any("error", "must be equal to integer"))
+		c.JSON(http.StatusBadRequest, &gin.H{
+			"request_id": c.GetString("requestId"),
+			"error":      "invalid token id",
+		})
+		return
+	}
+
+	txId, err := h.tokenService.TransferToken(request.From, request.To, tokenId)
+	if err != nil {
+		l.Error("failed to transfer token", slog.Any("error", err))
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"request_id": c.GetString("requestId"),
+			"error":      "failed to transfer token",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, TransferTokenResponse{
+		TxId: txId,
+	})
 }

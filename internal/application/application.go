@@ -51,8 +51,8 @@ func StartApp() {
 	serverAddr := fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
 	srv := &http.Server{
 		Addr:         serverAddr,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 30 * time.Second,
 		Handler:      server,
 	}
 
