@@ -15,7 +15,6 @@ import (
 	"nft_service/internal/persistence"
 	"nft_service/internal/service"
 	"strings"
-	"time"
 )
 
 func setupServer(ctx context.Context, db *database.DB, cfg *config.Config) (*gin.Engine, error) {
@@ -50,7 +49,7 @@ func setupServer(ctx context.Context, db *database.DB, cfg *config.Config) (*gin
 		return nil, errors.New("failed to create contract service" + err.Error())
 	}
 
-	go contractService.StartCacheUpdater(ctx, 30*time.Second)
+	go contractService.StartCacheUpdater(ctx, cfg.CacheUpdateInterval)
 
 	tokenService := service.NewTokenService(tokenRepo, contractService)
 	tokenHandler := controller.NewTokenHandler(tokenService)

@@ -5,19 +5,21 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"time"
 )
 
 type Config struct {
-	Host            string
-	Port            string
-	DBURI           string
-	UserAddress     string
-	UserPrivateKey  string
-	NetworkName     string
-	InfuraApiKey    string
-	ChainID         int64
-	ContractAddress string
-	ContractABIPath string
+	Host                string
+	Port                string
+	DBURI               string
+	CacheUpdateInterval time.Duration
+	UserAddress         string
+	UserPrivateKey      string
+	NetworkName         string
+	InfuraApiKey        string
+	ChainID             int64
+	ContractAddress     string
+	ContractABIPath     string
 }
 
 func LoadConfig() (*Config, error) {
@@ -40,6 +42,18 @@ func LoadConfig() (*Config, error) {
 	if dbURI == "" {
 		l.Error("DB_URI is not set")
 		return nil, errors.New("DB_URI is not set")
+	}
+
+	cacheUpdateInterval := os.Getenv("CACHE_UPDATE_INTERVAL")
+	if cacheUpdateInterval == "" {
+		l.Error("CACHE_UPDATE_DURATION is not set")
+		return nil, errors.New("CACHE_UPDATE_DURATION is not set")
+	}
+
+	intCacheUpdateInterval, err := strconv.ParseInt(cacheUpdateInterval, 10, 64)
+	if err != nil {
+		l.Error("CACHE_UPDATE_DURATION is not integer", "error", err)
+		return nil, errors.New("CACHE_UPDATE_DURATION is not integer")
 	}
 
 	userAddress := os.Getenv("USER_ADDRESS")
@@ -90,15 +104,16 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
-		Host:            host,
-		Port:            port,
-		DBURI:           dbURI,
-		UserAddress:     userAddress,
-		UserPrivateKey:  userPrivateKey,
-		NetworkName:     networkName,
-		InfuraApiKey:    infuraApiKey,
-		ChainID:         intChainID,
-		ContractAddress: contractAddress,
-		ContractABIPath: contractABIPath,
+		Host:                host,
+		Port:                port,
+		DBURI:               dbURI,
+		CacheUpdateInterval: time.Duration(intCacheUpdateInterval) * time.Second,
+		UserAddress:         userAddress,
+		UserPrivateKey:      userPrivateKey,
+		NetworkName:         networkName,
+		InfuraApiKey:        infuraApiKey,
+		ChainID:             intChainID,
+		ContractAddress:     contractAddress,
+		ContractABIPath:     contractABIPath,
 	}, nil
 }
