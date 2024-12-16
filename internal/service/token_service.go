@@ -9,10 +9,10 @@ import (
 
 type TokenService struct {
 	repo     domain.TokenRepository
-	contract *contract.NFTContract
+	contract contract.NFTService
 }
 
-func NewTokenService(repo domain.TokenRepository, contract *contract.NFTContract) *TokenService {
+func NewTokenService(repo domain.TokenRepository, contract contract.NFTService) *TokenService {
 	return &TokenService{repo: repo, contract: contract}
 }
 
