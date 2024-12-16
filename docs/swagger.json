@@ -232,6 +232,56 @@
         ],
         "description": " Returns exact the total number of NFT tokens minted on the blockchain."
       }
+    },
+    "/api/tokens/transfer": {
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Successfully transferred NFT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to transfer NFT token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "NFT Token"
+        ],
+        "description": " Transfer of the NFT token to a new owner",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferTokenRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
     }
   },
   "components": {
@@ -291,6 +341,28 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "TransferTokenRequest": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "token_id": {
+            "type": "string"
+          }
+        }
+      },
+      "TransferTokenResponse": {
+        "type": "object",
+        "properties": {
+          "tx_id": {
+            "type": "string"
           }
         }
       },

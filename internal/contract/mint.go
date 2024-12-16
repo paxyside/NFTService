@@ -86,6 +86,7 @@ func (m *NFTContract) Mint(token *domain.Token) (*domain.Token, error) {
 		if err.Error() != "not found" {
 			return nil, fmt.Errorf("failed to get transaction receipt: %w", err)
 		}
+		time.Sleep(2 * time.Second)
 	}
 
 	for _, log := range receipt.Logs {
