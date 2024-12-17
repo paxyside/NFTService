@@ -65,6 +65,12 @@ func setupServer(ctx context.Context, db *database.DB, cfg *config.Config, mq *r
 		}
 	}()
 
+	go func() {
+		if err := workerService.TransferStatusUpdater(); err != nil {
+			l.Error("failed to update transfer queue" + err.Error())
+		}
+	}()
+
 	tokenService := service.NewTokenService(tokenRepo, contractService, mq, tokenQueue)
 	transferService := service.NewTransferService(transferRepo, contractService, mq, transferQueue)
 	tokenHandler := controller.NewTokenHandler(tokenService)

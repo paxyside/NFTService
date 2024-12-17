@@ -12,7 +12,7 @@ import (
 
 func (w *Worker) TransferStatusUpdater() error {
 	l := slog.Default()
-	msgs, err := w.mq.Consume(w.tokenQueue.Name)
+	msgs, err := w.mq.Consume(w.transferQueue.Name)
 	if err != nil {
 		return errors.New("failed to consume transfer update message")
 	}
