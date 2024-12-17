@@ -1,9 +1,11 @@
 # NFTService for Rock`n`Block
 ![img.png](img.png)
 
-NFT Service is a backend applications designed for seamless interaction with ERC-721.\
-The service provides REST APIs for UNIT operations, including querying total supply, creating unique tokens, and retrieving token lists.
-It integrates with smart contracts to execute blockchain transactions and stores token metadata in a PostgreSQL.
+NFT Service is a backend application designed for managing ERC-721 tokens on the blockchain. \
+The service enables minting unique NFTs using the mint method, retrieving the total supply of tokens, and listing stored NFTs and transfers from a PostgreSQL database.
+It facilitates transferring tokens to new owners by creating and tracking blockchain transactions.\
+The application integrates RabbitMQ queues to process token IDs once minted and to update transfer statuses after confirmation on the blockchain,
+ensuring reliability and accurate record-keeping.
 
 [Test task](https://confluence.rocknblock.io/pages/viewpage.action?pageId=1082566)
 
@@ -54,6 +56,7 @@ docker compose build && docker compose up -d
 Step 1: Start database container
 ```bash
 docker compose up database -d
+dokcer compose up rabbitmq -d
 ```
 Step 2: Start application
 ```bash
