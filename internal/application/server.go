@@ -25,6 +25,7 @@ func setupServer(ctx context.Context, db *database.DB, cfg *config.Config, mq *r
 	l := slog.Default()
 
 	tokenRepo := persistence.NewTokenRepo(db.Conn)
+	transferRepo := persistence.NewTransferRepo(db.Conn)
 
 	contractUrl, err := utils.GenerateInfuraURL(strings.ToLower(cfg.NetworkName), cfg.InfuraApiKey)
 	if err != nil {
@@ -48,7 +49,12 @@ func setupServer(ctx context.Context, db *database.DB, cfg *config.Config, mq *r
 		return nil, errors.New("failed to declare token queue" + err.Error())
 	}
 
-	workerService, err := worker.NewWorker(contractUrl, mq, tokenQueue, tokenRepo, contractABI)
+	transferQueue, err := mq.DeclareQueue("transfer_queue")
+	if err != nil {
+		return nil, errors.New("failed to declare transfer queue" + err.Error())
+	}
+
+	workerService, err := worker.NewWorker(contractUrl, mq, tokenQueue, transferQueue, tokenRepo, transferRepo, contractABI)
 	if err != nil {
 		return nil, errors.New("failed to create worker service" + err.Error())
 	}
@@ -60,7 +66,9 @@ func setupServer(ctx context.Context, db *database.DB, cfg *config.Config, mq *r
 	}()
 
 	tokenService := service.NewTokenService(tokenRepo, contractService, mq, tokenQueue)
+	transferService := service.NewTransferService(transferRepo, contractService, mq, transferQueue)
 	tokenHandler := controller.NewTokenHandler(tokenService)
+	transferHandler := controller.NewTransferHandler(transferService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -74,11 +82,14 @@ func setupServer(ctx context.Context, db *database.DB, cfg *config.Config, mq *r
 		c.File("./docs/swagger.json")
 	})
 	r.GET("/api/docs/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.URL("/api/docs/spec")))
+
 	r.POST("/api/tokens/create", tokenHandler.Create)
-	r.POST("/api/tokens/transfer", tokenHandler.Transfer)
 	r.GET("/api/tokens/list", tokenHandler.List)
 	r.GET("/api/tokens/total_supply", tokenHandler.Total)
 	r.GET("/api/tokens/total_supply_exact", tokenHandler.ExactTotal)
+
+	r.POST("/api/transfers/create", transferHandler.Create)
+	r.GET("/api/transfers/list", transferHandler.List)
 
 	return r, nil
 }

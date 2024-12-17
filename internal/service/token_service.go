@@ -66,7 +66,3 @@ func (t *TokenService) TotalSupply() (*big.Int, error) {
 func (t *TokenService) ExactTotalSupply() (*big.Int, error) {
 	return t.contract.ExactTotalSupply()
 }
-
-func (t *TokenService) TransferToken(from string, to string, tokenId *big.Int) (string, error) {
-	return t.contract.TransferToken(from, to, tokenId)
-}

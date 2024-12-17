@@ -15,7 +15,7 @@ type NFTService interface {
 	Mint(token *domain.Token) (*domain.Token, error)
 	TotalSupply() (*big.Int, error)
 	ExactTotalSupply() (*big.Int, error)
-	TransferToken(from string, to string, tokenId *big.Int) (string, error)
+	TransferToken(transfer *domain.Transfer) (*domain.Transfer, error)
 }
 
 type NFTContract struct {

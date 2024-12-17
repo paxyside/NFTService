@@ -6,16 +6,15 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/rabbitmq/amqp091-go"
 	"log/slog"
-	"math/big"
 	"strings"
 	"time"
 )
 
-func (w *Worker) TokenUpdater() error {
+func (w *Worker) TransferStatusUpdater() error {
 	l := slog.Default()
 	msgs, err := w.mq.Consume(w.tokenQueue.Name)
 	if err != nil {
-		return errors.New("failed to consume token update message")
+		return errors.New("failed to consume transfer update message")
 	}
 
 	maxWorkers := 10
@@ -44,25 +43,15 @@ func (w *Worker) TokenUpdater() error {
 				}
 			}
 
-			var tokenID string
-			for _, log := range receipt.Logs {
-				if log.Topics[0].Hex() == w.parsedABI.Events["Transfer"].ID.Hex() {
-					var transferEvent struct {
-						From    common.Address
-						To      common.Address
-						TokenID *big.Int
-					}
-					if err := w.parsedABI.UnpackIntoInterface(&transferEvent, "Transfer", log.Data); err != nil {
-						l.Error("failed to unpack transfer event", slog.Any("error", err))
-						return
-					}
-					tokenID = new(big.Int).SetBytes(log.Topics[3].Bytes()).String()
-					break
-				}
+			var txStatus string
+			if receipt.Status == 1 {
+				txStatus = "success"
+			} else {
+				txStatus = "failed"
 			}
 
-			if err := w.tokenRepo.UpdateTokenID(tokenID, txHash); err != nil {
-				l.Error("failed to update token", slog.Any("error", err))
+			if err := w.transferRepo.UpdateStatus(txStatus, txHash); err != nil {
+				l.Error("failed to update transfer status", slog.Any("error", err))
 				msg.Nack(false, true)
 				return
 			}

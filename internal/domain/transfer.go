@@ -2,23 +2,26 @@ package domain
 
 import (
 	"errors"
+	"math/big"
 	"regexp"
+	"time"
 )
 
 type TransferRepository interface {
 	Create(transfer *Transfer) error
-	TransferList() ([]Transfer, error)
+	UpdateStatus(status, txHash string) error
+	List(limit, offset int) ([]Transfer, error)
 }
 
 type Transfer struct {
-	ID          int    `json:"id"`
-	FromAddress string `json:"from_address"`
-	ToAddress   string `json:"to_address"`
-	TokenID     string `json:"token_id"`
-	TxHash      string `json:"tx_hash"`
-	Status      string `json:"status"`
-	CreatedAt   int64  `json:"created_at"`
-	UpdatedAt   int64  `json:"updated_at"`
+	ID          int       `json:"id"`
+	FromAddress string    `json:"from_address" binding:"required"`
+	ToAddress   string    `json:"to_address" binding:"required"`
+	TokenID     string    `json:"token_id" binding:"required"`
+	TxHash      string    `json:"tx_hash"`
+	Status      string    `json:"status"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 func (t *Transfer) ValidateToCreate() error {
@@ -40,6 +43,15 @@ func (t *Transfer) ValidateToCreate() error {
 
 	if !rgx.MatchString(t.ToAddress) {
 		return errors.New("invalid to address " + t.ToAddress)
+	}
+
+	if t.TokenID == "" {
+		return errors.New("invalid token id")
+	}
+
+	_, ok := new(big.Int).SetString(t.TokenID, 10)
+	if !ok {
+		return errors.New("invalid token id")
 	}
 
 	return nil

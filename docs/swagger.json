@@ -233,15 +233,15 @@
         "description": " Returns exact the total number of NFT tokens minted on the blockchain."
       }
     },
-    "/api/tokens/transfer": {
+    "/api/transfers/create": {
       "post": {
         "responses": {
           "201": {
-            "description": "Successfully transferred NFT token",
+            "description": "Successfully created transfer",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransferTokenResponse"
+                  "$ref": "#/components/schemas/Transfer"
                 }
               }
             }
@@ -257,7 +257,7 @@
             }
           },
           "500": {
-            "description": "Failed to transfer NFT token",
+            "description": "Failed to create transfer",
             "content": {
               "application/json": {
                 "schema": {
@@ -268,19 +268,81 @@
           }
         },
         "tags": [
-          "NFT Token"
+          "Transfers"
         ],
-        "description": " Transfer of the NFT token to a new owner",
+        "description": " Creates a new transfer of the NFT token to a new owner",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TransferTokenRequest"
+                "$ref": "#/components/schemas/CreateTransferRequest"
               }
             }
           },
           "required": true
         }
+      }
+    },
+    "/api/transfers/list": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful response containing the list of transfers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transfer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Transfers"
+        ],
+        "description": " Returns a list of transfers. If `limit` and `offset` parameters are provided, they will be used for pagination. By default, `limit` is set to 200, and `offset` is 0. The `limit` value must be between 1 and 500.",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Pagination offset, default 0",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "description": "Pagination offset, default 0"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of pagination elements, default 200, max 500",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "description": "Number of pagination elements, default 200, max 500"
+            }
+          }
+        ]
       }
     }
   },
@@ -293,6 +355,20 @@
             "type": "string"
           },
           "media_url": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateTransferRequest": {
+        "type": "object",
+        "properties": {
+          "from_address": {
+            "type": "string"
+          },
+          "to_address": {
+            "type": "string"
+          },
+          "token_id": {
             "type": "string"
           }
         }
@@ -343,25 +419,32 @@
           }
         }
       },
-      "TransferTokenRequest": {
+      "Transfer": {
         "type": "object",
         "properties": {
-          "from": {
+          "id": {
+            "type": "integer"
+          },
+          "from_address": {
             "type": "string"
           },
-          "to": {
+          "to_address": {
             "type": "string"
           },
           "token_id": {
             "type": "string"
-          }
-        }
-      },
-      "TransferTokenResponse": {
-        "type": "object",
-        "properties": {
-          "tx_id": {
+          },
+          "tx_hash": {
             "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "integer"
           }
         }
       },
@@ -389,6 +472,35 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "domain.Transfer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "from_address": {
+            "type": "string"
+          },
+          "to_address": {
+            "type": "string"
+          },
+          "token_id": {
+            "type": "string"
+          },
+          "tx_hash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "integer"
           }
         }
       }
