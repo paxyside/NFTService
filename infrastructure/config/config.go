@@ -12,6 +12,7 @@ type Config struct {
 	Host                string
 	Port                string
 	DBURI               string
+	AMQPURI             string
 	CacheUpdateInterval time.Duration
 	UserAddress         string
 	UserPrivateKey      string
@@ -42,6 +43,12 @@ func LoadConfig() (*Config, error) {
 	if dbURI == "" {
 		l.Error("DB_URI is not set")
 		return nil, errors.New("DB_URI is not set")
+	}
+
+	amqpURI := os.Getenv("AMQP_URI")
+	if amqpURI == "" {
+		l.Error("AMQP_URI is not set")
+		return nil, errors.New("AMQP_URI is not set")
 	}
 
 	cacheUpdateInterval := os.Getenv("CACHE_UPDATE_INTERVAL")
@@ -107,6 +114,7 @@ func LoadConfig() (*Config, error) {
 		Host:                host,
 		Port:                port,
 		DBURI:               dbURI,
+		AMQPURI:             amqpURI,
 		CacheUpdateInterval: time.Duration(intCacheUpdateInterval) * time.Second,
 		UserAddress:         userAddress,
 		UserPrivateKey:      userPrivateKey,

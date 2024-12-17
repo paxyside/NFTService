@@ -13,6 +13,7 @@ services:
     restart: unless-stopped
     environment:
       - DB_URI=${DB_URI} # postgresql://postgres:pass@database:5432/postgres?sslmode=disable
+      - AMQP_URI=${AMQP_URI}
       - HOST=${HOST}
       - PORT=${PORT:-8008} # 8008
       - GIN_MODE=${GIN_MODE:-debug} # debug | release
@@ -43,6 +44,19 @@ services:
       interval: 30s
       timeout: 3s
       retries: 2
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:4.0-management-alpine
+    container_name: "rabbitmq"
+    ports:
+      - "5672:5672"  # RabbitMQ protocol
+      - "15672:15672" # RabbitMQ management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS:-guest}
+    networks:
+      nft_network:
     restart: unless-stopped
 
   prometheus:

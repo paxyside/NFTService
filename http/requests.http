@@ -11,18 +11,21 @@ Content-Type: application/json
 }
 
 ### transfer token to new owner
-POST http://127.0.0.1:8008/api/tokens/transfer
+POST http://127.0.0.1:8008/api/transfers/create
 Content-Type: application/json
 
 {
-  "from": "0xC92f65c05ccdeF650fe1fdeC0221E5f993ea8956",
-  "to": "0xe7513343c3EaD5c17f5E9d857a4b7faB07F56d0a",
-  "token_id": "129"
+  "from_address": "0xC92f65c05ccdeF650fe1fdeC0221E5f993ea8956",
+  "to_address": "0xe7513343c3EaD5c17f5E9d857a4b7faB07F56d0a",
+  "token_id": "149"
 }
 
 
 ### list tokens
 GET http://127.0.0.1:8008/api/tokens/list
+
+### list transfers
+GET http://127.0.0.1:8008/api/transfers/list
 
 ### total supply
 GET http://127.0.0.1:8008/api/tokens/total_supply

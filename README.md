@@ -1,15 +1,19 @@
 # NFTService for Rock`n`Block
 ![img.png](img.png)
 
-NFT Service is a backend applications designed for seamless interaction with ERC-721.\
-The service provides REST APIs for UNIT operations, including querying total supply, creating unique tokens, and retrieving token lists.
-It integrates with smart contracts to execute blockchain transactions and stores token metadata in a PostgreSQL.
+NFT Service is a backend application designed for managing ERC-721 tokens on the blockchain. \
+The service enables minting unique NFTs using the mint method, retrieving the total supply of tokens, and listing stored NFTs and transfers from a PostgreSQL database.
+It facilitates transferring tokens to new owners by creating and tracking blockchain transactions.\
+The application integrates RabbitMQ queues to process token IDs once minted and to update transfer statuses after confirmation on the blockchain,
+ensuring reliability and accurate record-keeping.
 
 [Test task](https://confluence.rocknblock.io/pages/viewpage.action?pageId=1082566)
 
-[Swagger docs](http://127.0.0.1:8008/api/docs/swagger/index.html)
+[Swagger UI](http://127.0.0.1:8008/api/docs/swagger/index.html)
 
-[Prometheus metrics](http://127.0.0.1:9090)
+[Prometheus UI](http://127.0.0.1:9090)
+
+[RabbitMQ UI](http://127.0.0.1:15672)
 
 ## Installed Packages
 - [Go-Ethereum](https://github.com/ethereum/go-ethereum)
@@ -18,6 +22,7 @@ It integrates with smart contracts to execute blockchain transactions and stores
 - [PGXPool for PostgreSQL](https://github.com/jackc/pgx)
 - [Go-Swagger3](https://github.com/parvez3019/go-swagger3)
 - [Go-Migrate](https://github.com/golang-migrate/migrate)
+- [Go-RabbitMQ](https://github.com/rabbitmq/amqp091-go)
 
 ## Prerequisites
 Step 1: Clone repository
@@ -51,6 +56,7 @@ docker compose build && docker compose up -d
 Step 1: Start database container
 ```bash
 docker compose up database -d
+dokcer compose up rabbitmq -d
 ```
 Step 2: Start application
 ```bash
@@ -78,26 +84,29 @@ go-swagger3 --module-path . --main-file-path ./cmd/nft_service/main.go --output 
 │   └── nft_service/                 # Main entry point for the application
 ├── docs/
 │   └── swagger.json                 # Swagger API documentation
+├── http/
+│   └── requests.http                # HTTP request examples for testing
 ├── infrastructure/
-│   ├── config/                      # Application configuration
-│   ├── database/                    # Database connection and setup
-│   └── utils/                       # Utility functions (e.g., hash generation, test helpers)
+│   ├── config/                      # Application configuration (e.g., env parsing)
+│   ├── database/                    # Database connection and initialization
+│   ├── rabbit/                      # RabbitMQ connection and helpers
+│   └── utils/                       # Utility functions (e.g., hashing, ABI loader)
 ├── internal/
-│   ├── application/                 # Main application logic (e.g., server setup)
-│   ├── contract/                    # Contract service for interacting with the blockchain
-│   ├── controller/                  # HTTP handlers and middleware
-│   ├── domain/                      # Domain models and business logic
-│   ├── persistence/                 # Database repository implementations and mock unit-tests
-│   └── service/                     # Service layer for token management
-├── migrations/                      # Database migration files
-│   ├── 000001_base_schema.up.sql    # Initial schema setup
-│   └── 000001_base_schema.down.sql  # Rollback for the initial schema
-├── contract_abi.json                # ABI for interacting with the NFT smart contract
+│   ├── application/                 # Core application logic (e.g., server setup)
+│   ├── contract/                    # Logic for interacting with blockchain contracts
+│   ├── controller/                  # HTTP handlers, routing, and middleware
+│   ├── domain/                      # Domain models and interfaces
+│   ├── persistence/                 # Repositories and database interaction logic
+│   ├── service/                     # Business services (e.g., token operations)
+│   └── worker/                      # Asynchronous workers for blockchain updates
+├── migrations/                      # Database migrations for schema
+├── contract_abi.json                # ABI for smart contract interaction
 ├── docker-compose.yaml              # Docker Compose configuration
 ├── Dockerfile                       # Dockerfile for building the application
-├── Makefile                         # Build and run commands for the project
-├── go.mod                           # Go dependencies
-├── go.sum                           # Go dependency checksums
-├── img.png                          # Project illustration
-└── README.md                        # Documentation for the project
+├── Makefile                         # Common build and run tasks
+├── prometheus.yml                   # Prometheus monitoring configuration
+├── go.mod                           # Go module dependencies
+├── go.sum                           # Dependency checksums
+├── README.md                        # Project documentation
+└── img.png                          # Example or project illustration
 ```
